@@ -1,0 +1,18 @@
+version: "3.8"
+services:
+  rabbitmq:
+    image: rabbitmq:management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"     # RabbitMQ service port
+      - "15672:15672"   # RabbitMQ Management UI port
+    volumes:
+      - ./rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
+    environment:
+      RABBITMQ_LOGS: "-"          # Log to standard output (stdout)
+      RABBITMQ_SASL_LOGS: "true"  # Enable authentication logs
+    healthcheck:
+      test: ["CMD", "rabbitmqctl", "status"]
+      interval: 30s               # Check every 30 seconds
+      timeout: 10s                # Timeout after 10 seconds
+      retries: 3
