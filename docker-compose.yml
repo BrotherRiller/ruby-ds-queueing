@@ -16,3 +16,14 @@ services:
       interval: 30s               # Check every 30 seconds
       timeout: 10s                # Timeout after 10 seconds
       retries: 3
+
+  client:
+    build:
+      context: .
+      dockerfile: Dockerfile       # Build from the Dockerfile in the current directory
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    volumes:
+      - .:/app                    # Mount the current directory into the container
+    command: ruby order_producer.rb # Replace with your desired Ruby script (e.g., order_producer.rb)

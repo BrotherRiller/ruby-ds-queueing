@@ -9,24 +9,33 @@ connection.start
 channel = connection.create_channel
 parcel_queue = channel.queue('parcel_queue', durable: true)
 
-# Consume messages from the parcel_queue
 puts 'Waiting for parcels from the "parcel_queue". Press CTRL+C to exit...'
 
+# Subscribe to the parcel queue
 parcel_queue.subscribe(block: true) do |_delivery_info, _properties, body|
   begin
-    # Parse the JSON message
-    parcel = JSON.parse(body)
+    # Parse the incoming message
+    message = JSON.parse(body)
 
-    # Simulate loading the parcel
-    puts " [x] Loading Parcel ID: #{parcel['id']} for Order ID: #{parcel['orderId']}"
-    puts "     Customer: #{parcel['customer']['name']} <#{parcel['customer']['mail']}>"
-    sleep(rand(2..5)) # Simulate loading time
-    puts " [x] Parcel Loaded\n\n"
+    # Extract parcel details
+    parcel_id = message['id']
+    order_number = message['orderNumber']
+    items = message['items']
+
+    # Display parcel details
+    puts " [x] Loading Parcel ##{order_number} (Parcel ID: #{parcel_id})"
+    puts "     Items:"
+    items.each do |item|
+      puts "       - #{item['name']} (#{item['quantity']} x $#{item['price']})"
+    end
+    sleep(rand(2..5)) # Random delay to simulate loading
+
+    puts " [x] Parcel ##{order_number} loaded onto truck\n\n"
 
   rescue JSON::ParserError => e
-    puts " [!] Failed to parse message: #{e.message}"
+    puts " [!] Failed to process parcel: #{e.message}"
   end
 end
 
-# Close the connection (This won't be reached in blocking mode)
+# Close the connection when done
 connection.close
